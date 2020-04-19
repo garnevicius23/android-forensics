@@ -1,0 +1,9 @@
+SQL query to retrieve data with readable date format:  
+    select address, strftime('%Y-%m-%d %H:%M:%S', date/1000, 'unixepoch'), body from sms order by thread_id, _id;
+
+Sent messages are marked 'type - 2'; Received messages - 'type - 1'
+
+_id - unique identifier for each message
+thread_id - chat enumeration
+address - target phone number
+body - sms content
