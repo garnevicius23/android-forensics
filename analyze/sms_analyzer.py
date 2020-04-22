@@ -11,56 +11,76 @@ def grant_root_permissions():
 
     print ('Running. Your euid is', euid)
 
-def matching_string(x,y):
-    match=''
-    for i in range(0,len(x)):
-        for j in range(0,len(y)):
-            k=1
-            # now applying while condition untill we find a substring match and length of substring is less than length of x and y
-            while (i+k <= len(x) and j+k <= len(y) and x[i:i+k]==y[j:j+k]):
-                if len(match) <= len(x[i:i+k]):
-                   match = x[i:i+k]
-                k=k+1
-    return match  
+class MessagesAnalyzer():
+    def __init__(self):
+        self.all_words = {}
+        self.words_by_thread = {}
 
-def calculate_words(messages_list):
-    words_by_thread = {}
-    all_words = {}
+    # Check how many characters in two words are matching
+    def matching_string(self, x,y):
+        match=''
+        for i in range(0,len(x)):
+            for j in range(0,len(y)):
+                k=1
+                # now applying while condition untill we find a substring match and length of substring is less than length of x and y
+                while (i+k <= len(x) and j+k <= len(y) and x[i:i+k]==y[j:j+k]):
+                    if len(match) <= len(x[i:i+k]):
+                        match = x[i:i+k]
+                    k=k+1
+        return match  
 
-    for message in messages_list:
+    def calculate_words(self, messages_list):
+        for message in messages_list:
 
-        if message[1] not in words_by_thread.keys():
-            words_by_thread[message[1]] = {}
+            if message[1] not in self.words_by_thread.keys():
+                self.words_by_thread[message[1]] = {}
 
-        for text in message[4].lower().split(" "):
-            if len(words_by_thread[message[1]].keys()) == 0:
-                words_by_thread[message[1]][text] = 1
+            for text in message[4].lower().split(" "):
 
-            for key in list(words_by_thread[message[1]].keys()):
-                if len(matching_string(text, key)) > 3:
-                #if text in words_by_thread[message[1]].keys():
-                    words_by_thread[message[1]][key] += 1
+                # # Collect how much the same word was repeated through in each chat
+                if len(self.words_by_thread[message[1]].keys()) == 0:
+                    self.words_by_thread[message[1]][text] = 1
+                else: 
+                    if self.check_for_existing_thread(text, message[1]) == 0:
+                        self.words_by_thread[message[1]][text] = 1
+
+                
+                # Collect how much the same word was repeated through all chats
+                if len(self.all_words) == 0:
+                    self.all_words[text] = 1
                 else:
-                    words_by_thread[message[1]][text] = 1
-            
-            if len(all_words) == 0:
-                all_words[text] = 1
+                    if self.check_for_existing(text) == 0 and not text == "":
+                        self.all_words[text] = 1
+                    
+        self.all_words = sorted(self.all_words.items(), key=lambda x: x[1], reverse=True)
+        print(self.all_words)
+        print(len(self.all_words))
 
-            for key in list(all_words.keys()):
-                if len(matching_string(key, text)) > 4:
-                    all_words[key] += 1
-                    break;
-                else:
-                    all_words[text] = 1
+    def check_for_existing_thread(self, text, thread):
+        for key in list(self.words_by_thread[thread].keys()):
+            if len(self.matching_string(text, key)) > 5 or text == key:
+                self.words_by_thread[thread][key] += 1
+                return 1
+        
+        return 0
 
-    print(words_by_thread)
-    print(len(all_words.keys()))
-    print(len(matching_string("uogienes.", "uogiene")) > 3)
+
+    def check_for_existing(self, text):
+        for key in list(self.all_words.keys()):
+
+            if (len(self.matching_string(key, text)) > 5 or text == key) and not text == "":
+                self.all_words[key] += 1
+                return 1
+        
+        return 0
+
+                
 
 grant_root_permissions()
 query = DataExtrator()
 
-calculate_words(query.get_sms_list())
+sms = MessagesAnalyzer()
+sms.calculate_words(query.get_sms_list())
 
 # _id[0], thread_id[1] , address[2], date[3], body[4], type[5]
 # for row in query.get_sms_list():
