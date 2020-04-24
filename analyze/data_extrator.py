@@ -23,8 +23,8 @@ class DataExtrator:
                     conn = self.create_connection(os.path.join(dirpath, f))
                     
                     curr = conn.cursor()
-                    curr.execute("select _id, thread_id, address, strftime('%Y-%m-%d %H:%M:%S', date/1000, 'unixepoch') date, body, type from sms order by thread_id, _id")
-                    result = curr.fetchall()
+                    curr.execute("select _id, thread_id, address, strftime('%Y-%m-%d %H:%M:%S', date/1000, 'unixepoch') date, body, case when type = 2 then 'sent' when type = 1 then 'received' end from sms order by thread_id, _id")
+                    result = list(curr)
 
                     return result
 
