@@ -4,7 +4,7 @@ from reportlab.lib.units import cm
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import LongTable, TableStyle, BaseDocTemplate,Frame, PageTemplate
 from reportlab.lib import colors
-from reportlab.platypus import Paragraph, Table, TableStyle
+from reportlab.platypus import Paragraph, Table, TableStyle, PageBreak
 
 from data_extrator import DataExtrator
 import os, sys
@@ -21,24 +21,12 @@ def grant_root_permissions():
 
     print ('Running. Your euid is', euid)
 
-def test():
-    doc = BaseDocTemplate(
-        "question.pdf",
-        pagesize=A4,
-        rightMargin=72,
-        leftMargin=72,
-        topMargin=50,
-        bottomMargin=80,
-        showBoundary=False)
-
-    elements = []
-
-    grant_root_permissions()
+def call_table():
     query = DataExtrator()
-    datas = list(query.get_sms_list())
-    data = [['Message ID', 'Thread ID', 'Receipent', 'Date', 'Body', 'Sent/revceived']]
+    data_tmp = list(query.get_call_hisotry())
+    data = [['Row ID', 'Contact Name', 'Number', 'Date', 'Type', 'Duration\n in seconds']]
 
-    for i in datas:
+    for i in data_tmp:
         tmp = []
         for j in i:
             tmp.append(str(j))
@@ -58,13 +46,71 @@ def test():
 
     data2 = [[Paragraph(cell, styleN) for cell in row] for row in data]
 
-    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height - 2 * cm, id='normal')
+    colwidths = [2*cm, 3*cm, 3*cm, 4*cm, 3*cm, 2.2*cm]
+
+    call_table = LongTable(data2, colWidths=colwidths, repeatRows=1)
+    call_table.setStyle(TableStyle(tableStyle))
+
+    return call_table
+
+def sms_table():
+    query = DataExtrator()
+    data_tmp = list(query.get_sms_list())
+    data = [['Message ID', 'Thread ID', 'Receipent', 'Date', 'Body', 'Sent/revceived']]
+
+    for i in data_tmp:
+        tmp = []
+        for j in i:
+            tmp.append(str(j))
+        data.append(tmp)
+
+    tableStyle = [
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BACKGROUND', (0, 0), (5, 0), colors.lightgreen)
+        ]
+
+
+    styles = getSampleStyleSheet()
+    styleN = styles['Normal']
+
+    styleN.wordWrap = 'CJK'
+
+    data2 = [[Paragraph(cell, styleN) for cell in row] for row in data]
 
     colwidths = [2*cm, 2*cm, 3*cm, 4*cm, 6*cm, 2*cm]
 
     t = LongTable(data2, colWidths=colwidths, repeatRows=1)
     t.setStyle(TableStyle(tableStyle))
-    elements.append(t)
+
+    return t
+
+def create_report():
+    doc = BaseDocTemplate(
+        "report.pdf",
+        pagesize=A4,
+        rightMargin=72,
+        leftMargin=72,
+        topMargin=50,
+        bottomMargin=80,
+        showBoundary=False)
+
+    elements = []
+
+    grant_root_permissions()
+
+    styles = getSampleStyleSheet()
+
+    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height - 2 * cm, id='normal')
+
+    sms_title = Paragraph('Messages history log table.', styles["Heading1"])
+    call_title = Paragraph('Call history log table.', styles["Heading1"])
+
+    elements.append(sms_title)
+    elements.append(sms_table())
+    elements.append(PageBreak())
+    elements.append(call_title)
+    elements.append(call_table())
 
     template = PageTemplate(id='longtable', frames=frame)
     doc.addPageTemplates([template])
@@ -72,4 +118,4 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    create_report()

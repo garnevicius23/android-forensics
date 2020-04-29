@@ -37,6 +37,6 @@ class DataExtrator:
                     conn = self.create_connection(os.path.join(dirpath, f))
      
                     curr = conn.cursor()
-                    curr.execute("select _id, number, strftime('%Y-%m-%d %H:%M:%S', date/1000, 'unixepoch') date, duration, type from cals order by _id")
+                    curr.execute("select _id, name, number, strftime('%Y-%m-%d %H:%M:%S', date/1000, 'unixepoch') date, case when type = 2 then 'outgoing' when type = 1 then 'incoming' end, (duration/60) duration  from calls where duration > 0")
 
                     return curr.fetchall()

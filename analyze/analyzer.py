@@ -53,8 +53,8 @@ grant_root_permissions()
 
 for (dirpath, dirnames, filenames) in os.walk('/mnt/'):
     for f in filenames:
-        if "contacts" in os.path.join(dirpath, f):
-            print('FILE :', f)
+        if f == 'calllog.db':
+            print('FILE :', os.path.join(dirpath, f))
             #get_dbfile_sturcture(os.path.join(dirpath, f))
             
     # for d in dirnames:
