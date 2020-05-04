@@ -53,8 +53,8 @@ class MessagesAnalyzer():
                         self.all_words[text] = 1
                     
         self.all_words = sorted(self.all_words.items(), key=lambda x: x[1], reverse=True)
-        print(self.all_words)
-        print(len(self.all_words))
+        #print(self.all_words)
+        #print(len(self.all_words))
 
     def check_for_existing_thread(self, text, thread):
         for key in list(self.words_by_thread[thread].keys()):

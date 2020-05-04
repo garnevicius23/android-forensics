@@ -7,6 +7,7 @@ from reportlab.lib import colors
 from reportlab.platypus import Paragraph, Table, TableStyle, PageBreak
 
 from data_extrator import DataExtrator
+from sms_analyzer import MessagesAnalyzer
 import os, sys
 import numpy as np
 
@@ -85,6 +86,46 @@ def sms_table():
 
     return t
 
+def all_words_marking_table():
+    query = DataExtrator()
+    analyzer = MessagesAnalyzer()
+
+    analyzer.calculate_words(query.get_sms_list())
+
+    all_words_list = analyzer.all_words
+
+    print(all_words_list)
+
+    data_tmp = list(all_words_list)
+    data = [['Word', 'Times repeated']]
+
+    for i in data_tmp:
+        tmp = []
+        for j in i:
+            tmp.append(str(j))
+        data.append(tmp)
+
+    tableStyle = [
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BACKGROUND', (0, 0), (5, 0), colors.lightgreen)
+        ]
+
+
+    styles = getSampleStyleSheet()
+    styleN = styles['Normal']
+
+    styleN.wordWrap = 'CJK'
+
+    data2 = [[Paragraph(cell, styleN) for cell in row] for row in data]
+
+    colwidths = [2*cm, 2*cm]
+
+    tableWords = LongTable(data2, colWidths=colwidths, repeatRows=1)
+    tableWords.setStyle(TableStyle(tableStyle))
+
+    return tableWords
+
 def create_report():
     doc = BaseDocTemplate(
         "report.pdf",
@@ -105,10 +146,19 @@ def create_report():
 
     sms_title = Paragraph('Messages history log table.', styles["Heading1"])
     call_title = Paragraph('Call history log table.', styles["Heading1"])
+    all_words_marking_title = Paragraph('Words marking through all chats', styles["Heading1"])
+
+    
+    elements.append(all_words_marking_title)
+    elements.append(all_words_marking_table())
+
+    elements.append(PageBreak())
 
     elements.append(sms_title)
     elements.append(sms_table())
+
     elements.append(PageBreak())
+
     elements.append(call_title)
     elements.append(call_table())
 
