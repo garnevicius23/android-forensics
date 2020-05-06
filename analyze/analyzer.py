@@ -47,18 +47,7 @@ def get_sms_content():
      #for row in rows:
          #print(row)
 
-grant_root_permissions()
 
-#get_sms_content()
 
-for (dirpath, dirnames, filenames) in os.walk('/mnt/'):
-    for f in filenames:
-        if f == 'calllog.db':
-            print('FILE :', os.path.join(dirpath, f))
-            #get_dbfile_sturcture(os.path.join(dirpath, f))
-            
-    # for d in dirnames:
-    #     if "telephony" in os.path.join(dirpath, d):
-    #         print('DIRECTORY :', os.path.join(dirpath, d))
-    #         print('FILE :', os.path.join(dirpath, f))
+
 

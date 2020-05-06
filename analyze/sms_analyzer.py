@@ -15,6 +15,8 @@ class MessagesAnalyzer():
     def __init__(self):
         self.all_words = {}
         self.words_by_thread = {}
+        self.sms_statistics = {}
+        self.calls_statistics = {}
 
     # Check how many characters in two words are matching
     def matching_string(self, x,y):
@@ -32,17 +34,17 @@ class MessagesAnalyzer():
     def calculate_words(self, messages_list):
         for message in messages_list:
 
-            if message[1] not in self.words_by_thread.keys():
-                self.words_by_thread[message[1]] = {}
+            if message[2][-8:] not in self.words_by_thread.keys():
+                self.words_by_thread[message[2][-8:]] = {}
 
             for text in message[4].lower().split(" "):
 
                 # # Collect how much the same word was repeated through in each chat
-                if len(self.words_by_thread[message[1]].keys()) == 0:
-                    self.words_by_thread[message[1]][text] = 1
+                if len(self.words_by_thread[message[2][-8:]].keys()) == 0:
+                    self.words_by_thread[message[2][-8:]][text] = 1
                 else: 
-                    if self.check_for_existing_thread(text, message[1]) == 0:
-                        self.words_by_thread[message[1]][text] = 1
+                    if self.check_for_existing_thread(text, message[2][-8:]) == 0:
+                        self.words_by_thread[message[2][-8:]][text] = 1
 
                 
                 # Collect how much the same word was repeated through all chats
@@ -74,20 +76,45 @@ class MessagesAnalyzer():
         
         return 0
 
+    def analyze_sms_statistics(self, sms_statistics_list):
+        for row in sms_statistics_list:
+            if row[2][-8:] not in self.sms_statistics.keys():
+                # temporary list to store statistic data
+                # idx 0 - name, idx 1 - incoming sms, idx 2 - outgoing sms, idx 3 - total
+                self.sms_statistics[row[2][-8:]] = [row[1] ,0, 0, 0] 
+            
+            self.sms_statistics[row[2][-8:]][3] += 1
+            if row[3] == 'incoming':
+                self.sms_statistics[row[2][-8:]][1] += 1
+            elif row[3] == 'outgoing':
+                self.sms_statistics[row[2][-8:]][2] += 1
+
+        print(self.sms_statistics)
+
+    def analyze_calls_statistics(self, calls_statistics_list):
+        for row in calls_statistics_list:
+            if row[2][-8:] not in self.calls_statistics.keys():
+                # temporary list to store statistic data
+                # idx 0 - name, idx 1 - incoming sms, idx 2 - outgoing sms, idx 3 - missed, idx 4 -total
+                self.calls_statistics[row[2][-8:]] = [row[1] ,0, 0, 0, 0] 
+                
+            self.calls_statistics[row[2][-8:]][4] += 1
+            if row[3] == 'incoming':
+                self.calls_statistics[row[2][-8:]][1] += 1
+            elif row[3] == 'outgoing':
+                self.calls_statistics[row[2][-8:]][2] += 1
+            elif row[3] == 'missed':
+                self.calls_statistics[row[2][-8:]][3] += 1
+
+        print(self.calls_statistics)
+
+
+
+
                 
 
 grant_root_permissions()
 query = DataExtrator()
 
 sms = MessagesAnalyzer()
-sms.calculate_words(query.get_sms_list())
-
-# _id[0], thread_id[1] , address[2], date[3], body[4], type[5]
-# for row in query.get_sms_list():
-#     print("id: ", row[0])
-#     print("thread_id: ", row[1])
-#     print("address: ", row[2])
-#     print("date: ", row[3])
-#     print("body: ", row[4])
-#     print("type: ", row[5])
-#     print("--------------")
+sms.analyze_calls_statistics(query.get_calls_statistics())
