@@ -1,15 +1,9 @@
 import os, sys
 from data_extrator import DataExtrator
 
-def grant_root_permissions():
-    euid = os.geteuid()
-    if euid != 0:
-        print ("Script not started as root. Running sudo..")
-        args = ['sudo', sys.executable] + sys.argv + [os.environ]
-        # the next line replaces the currently-running process with the sudo
-        os.execlpe('sudo', *args)
-
-    print ('Running. Your euid is', euid)
+"""
+Class to form data to later display in report.
+"""
 
 class MessagesAnalyzer():
     def __init__(self):
@@ -81,15 +75,16 @@ class MessagesAnalyzer():
             if row[2][-8:] not in self.sms_statistics.keys():
                 # temporary list to store statistic data
                 # idx 0 - name, idx 1 - incoming sms, idx 2 - outgoing sms, idx 3 - total
-                self.sms_statistics[row[2][-8:]] = [row[1] ,0, 0, 0] 
+                if row[1] is None:
+                    self.sms_statistics[row[2][-8:]] = ['No Name' ,0, 0, 0] 
+                else:
+                    self.sms_statistics[row[2][-8:]] = [row[1] ,0, 0, 0]
             
             self.sms_statistics[row[2][-8:]][3] += 1
             if row[3] == 'incoming':
                 self.sms_statistics[row[2][-8:]][1] += 1
             elif row[3] == 'outgoing':
                 self.sms_statistics[row[2][-8:]][2] += 1
-
-        print(self.sms_statistics)
 
     def analyze_calls_statistics(self, calls_statistics_list):
         for row in calls_statistics_list:
@@ -106,15 +101,3 @@ class MessagesAnalyzer():
             elif row[3] == 'missed':
                 self.calls_statistics[row[2][-8:]][3] += 1
 
-        print(self.calls_statistics)
-
-
-
-
-                
-
-grant_root_permissions()
-query = DataExtrator()
-
-sms = MessagesAnalyzer()
-sms.analyze_calls_statistics(query.get_calls_statistics())

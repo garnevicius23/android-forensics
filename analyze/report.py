@@ -15,6 +15,10 @@ import os, sys
 import numpy as np
 
 
+"""
+    Script for generating final report of found data.
+"""
+
 def grant_root_permissions():
     euid = os.geteuid()
     if euid != 0:
@@ -147,8 +151,6 @@ def words_marking_by_chat():
     for thread in words_by_threads.keys():
         chat_title = Paragraph('Conversation with - ' + thread, styles["Heading3"])
         elements.append(chat_title)
-        #print(words_by_threads[thread])
-
         data_tmp = words_by_threads[thread]
         data_tmp = sorted(data_tmp.items(), key=lambda x: x[1], reverse=True)
         data = [['Word', 'Times repeated']]
@@ -180,17 +182,60 @@ def words_marking_by_chat():
 
     return elements
 
+def sms_statistics_part():
+    query = DataExtrator()
+    analyzer = MessagesAnalyzer()
+
+    analyzer.analyze_sms_statistics(query.get_sms_statistics())
+
+    data = analyzer.sms_statistics
+
+    elements = []
+
+    styles = getSampleStyleSheet()
+    elements.append(Paragraph('Messages communications statistics', styles["Heading1"]))
+    for info in data.keys():
+        elements.append(Paragraph('Statistics with ' + data[info][0] + ', phone number - ' + str(info), styles["Heading3"]))
+        elements.append(Paragraph('Incoming messages - ' + str(data[info][1]), styles["Normal"], bulletText='-'))
+        elements.append(Paragraph('Outgoing messages - ' + str(data[info][2]), styles["Normal"], bulletText='-'))
+        elements.append(Paragraph('Total messages - ' + str(data[info][3]), styles["Normal"], bulletText='-'))
+
+    elements.append(PageBreak())
+
+    return elements
+
+def calllog_statistics():
+    query = DataExtrator()
+    analyzer = MessagesAnalyzer()
+
+    analyzer.analyze_calls_statistics(query.get_calls_statistics())
+
+    data = analyzer.calls_statistics
+    elements = []
+
+    styles = getSampleStyleSheet()
+
+    elements.append(Paragraph('Call communications statistics', styles["Heading1"]))
+    for info in data.keys():
+        elements.append(Paragraph('Statistics with ' + data[info][0] + ', phone number - ' + str(info), styles["Heading3"]))
+        elements.append(Paragraph('Incoming calls - ' + str(data[info][1]), styles["Normal"], bulletText='-'))
+        elements.append(Paragraph('Outgoing calls - ' + str(data[info][2]), styles["Normal"], bulletText='-'))
+        elements.append(Paragraph('Missed calls - ' + str(data[info][3]), styles["Normal"], bulletText='-'))
+        elements.append(Paragraph('Total calls - ' + str(data[info][4]), styles["Normal"], bulletText='-'))
+
+    elements.append(PageBreak())
+
+    return elements
+
 def create_report_with_more_columns():
     doc = BaseDocTemplate(
-        "report1.pdf",
+        "report2.pdf",
         pagesize=A4,
         rightMargin=72,
         leftMargin=72,
         topMargin=50,
         bottomMargin=80,
         showBoundary=False)
-
-    grant_root_permissions()
 
     styles = getSampleStyleSheet()
 
@@ -214,9 +259,9 @@ def create_report_with_more_columns():
     doc.addPageTemplates([template])
     doc.build(elements)
 
-def create_report():
+def create_report_for_statistics():
     doc = BaseDocTemplate(
-        "report2.pdf",
+        "report1.pdf",
         pagesize=A4,
         rightMargin=72,
         leftMargin=72,
@@ -224,9 +269,29 @@ def create_report():
         bottomMargin=80,
         showBoundary=False)
 
-    #elements = []
+    styles = getSampleStyleSheet()
 
-    grant_root_permissions()
+    frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height - 2 * cm, id='normal')
+
+    elements = sms_statistics_part()
+    elements.extend(calllog_statistics())
+
+    template = PageTemplate(id='statistics', frames=frame)
+    doc.addPageTemplates([template])
+    doc.build(elements)
+
+
+def create_report_with_full_log():
+    doc = BaseDocTemplate(
+        "report3.pdf",
+        pagesize=A4,
+        rightMargin=72,
+        leftMargin=72,
+        topMargin=50,
+        bottomMargin=80,
+        showBoundary=False)
+
+    elements = []
 
     styles = getSampleStyleSheet()
 
@@ -234,8 +299,6 @@ def create_report():
 
     sms_title = Paragraph('Messages history log table.', styles["Heading1"])
     call_title = Paragraph('Call history log table.', styles["Heading1"])
-
-    elements = []
 
     elements.append(sms_title)
     elements.append(sms_table())
@@ -249,19 +312,27 @@ def create_report():
     doc.addPageTemplates([template])
     doc.build(elements)
 
+"""
+All data is splited through three different pages to make final document more convenient.
+One pdf has two columns, for that reason several pdf's was merged.
+"""
 def merger(output_path, input_paths):
     pdf_merger = PdfFileMerger()
     file_handles = []
 
     for path in input_paths:
         pdf_merger.append(path)
+        os.remove(path)
 
     with open(output_path, 'wb') as fileobj:
         pdf_merger.write(fileobj)
 
 
 if __name__ == '__main__':
-    create_report()
+    grant_root_permissions()
+
+    create_report_for_statistics()
+    create_report_with_full_log()
     create_report_with_more_columns()
 
     os.remove('report.pdf')
