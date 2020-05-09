@@ -7,14 +7,19 @@ if [ $EUID != 0 ]; then
 fi
 
 # Attach image to loop device
-echo "Please, specify working directory where image is stored: "
+#echo "Please, specify working directory where image is stored: "
 
-read working_dir
+working_dir="$1"
+
+if [ -z "$working_dir" ]
+then
+    read -p  "Please, specify working directory where image is stored: "  working_dir
+fi
 
 if [ -d $working_dir ]
 then
     cd $working_dir
-    losetup -f -P "$working_dir/blk0.img"
+    losetup -f -P "$working_dir/img/blk0.img"
 else
     echo "Please, make sure that such directory exists."
     exit 1
