@@ -10,6 +10,7 @@ fi
 #echo "Please, specify working directory where image is stored: "
 
 working_dir="$1"
+echo "$working_dir"
 
 if [ -z "$working_dir" ]
 then
@@ -18,7 +19,7 @@ fi
 
 if [ -d $working_dir ]
 then
-    cd $working_dir
+    #cd $working_dir
     losetup -f -P "$working_dir/img/blk0.img"
 else
     echo "Please, make sure that such directory exists."
@@ -47,3 +48,8 @@ do
         echo $loop_name - " was mounted successfuly."
     fi
 done
+
+mkdir -p "$working_dir/report"
+source ../analyze/bin/activate
+python ../analyze/report.py $working_dir
+deactivate

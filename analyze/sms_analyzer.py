@@ -90,8 +90,11 @@ class MessagesAnalyzer():
         for row in calls_statistics_list:
             if row[2][-8:] not in self.calls_statistics.keys():
                 # temporary list to store statistic data
-                # idx 0 - name, idx 1 - incoming sms, idx 2 - outgoing sms, idx 3 - missed, idx 4 -total
-                self.calls_statistics[row[2][-8:]] = [row[1] ,0, 0, 0, 0] 
+                # idx 0 - name, idx 1 - incoming call, idx 2 - outgoing call, idx 3 - missed, idx 4 -total
+                if row[1] is None:
+                    self.calls_statistics[row[2][-8:]] = ['No Name' ,0, 0, 0, 0]
+                else:
+                    self.calls_statistics[row[2][-8:]] = [row[1] ,0, 0, 0,0]
                 
             self.calls_statistics[row[2][-8:]][4] += 1
             if row[3] == 'incoming':

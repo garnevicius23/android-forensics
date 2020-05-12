@@ -4,9 +4,14 @@ echo "*** About to create disk image..."
 
 working_dir="$1"
 
+if [ -z "$working_dir" ]
+then
+    read -p  "Please, specify working directory where image is stored: "  working_dir
+fi
+
 if [ -d $working_dir ]
 then
-    cd $working_dir
+    continue
 else
     echo "Please, make sure that such directory exists."
     exit 1
@@ -15,7 +20,7 @@ fi
 # Attached device list
 mapfile -t devices_list < <( adb devices | grep -v "List"  | awk '{print $1}' | grep -v -e '^$')
 
-if [ ${#device_list[@]} -eq 0 ]
+if [ ${#devices_list[@]} -eq 0 ]
 then 
     echo "Zero devices are connected."
     exit 1;
@@ -36,14 +41,14 @@ then
     exit 1
 fi
 
-mkdir img
-cd "$working_dir/img"
+mkdir "$working_dir/img"
+#cd "$working_dir/img"
 
 # Create image of device inside external storage
 echo "Creating disk image..."
-adb -s ${devices_list[$device_number]} shell 'su busybox dd if=/dev/block/mmcblk0 of=/storage/0123-4567/blk0.img bs=4096'
+#adb -s ${devices_list[$device_number]} shell 'su busybox dd if=/dev/block/mmcblk0 of=/storage/0123-4567/blk0.img bs=4096'
 
 echo "Downloading image from phone to local storage... "
-adb -s ${devices_list[$device_number]} pull /storage/0123-4567/blk0.img
+#adb -s ${devices_list[$device_number]} pull /storage/0123-4567/blk0.img
 
-./mount_image.sh $working_dir
+./mount_image.sh "$working_dir"

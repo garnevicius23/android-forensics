@@ -335,7 +335,8 @@ if __name__ == '__main__':
     create_report_with_full_log()
     create_report_with_more_columns()
 
-    os.remove('report.pdf')
+    if os.path.exists(sys.argv[1] + '/report/report.pdf'):
+        os.remove(sys.argv[1] + '/report/report.pdf')
     paths = glob.glob('report*.pdf')
     paths.sort()
-    merger('report.pdf', paths)
+    merger(sys.argv[1] + '/report/report.pdf', paths)
