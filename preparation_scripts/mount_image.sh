@@ -20,6 +20,7 @@ fi
 if [ -d $working_dir ]
 then
     #cd $working_dir
+    echo "$working_dir/img/blk0.img"
     losetup -f -P "$working_dir/img/blk0.img"
 else
     echo "Please, make sure that such directory exists."
