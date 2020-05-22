@@ -44,9 +44,9 @@ mkdir "$working_dir/img"
 
 # Create image of device inside external storage
 echo "Creating disk image..."
-adb -s ${devices_list[$device_number]} shell 'su busybox dd if=/dev/block/mmcblk0 of=/storage/0123-4567/blk0.img bs=4096'
+#adb -s ${devices_list[$device_number]} shell 'su busybox dd if=/dev/block/mmcblk0 of=/storage/0123-4567/blk0.img bs=4096'
 
 echo "Downloading image from phone to local storage... "
-adb -s ${devices_list[$device_number]} pull /storage/0123-4567/blk0.img "$working_dir/img"
+#adb -s ${devices_list[$device_number]} pull /storage/0123-4567/blk0.img "$working_dir/img"
 
 ./mount_image.sh "$working_dir"

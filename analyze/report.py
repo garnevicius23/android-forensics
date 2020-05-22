@@ -1,5 +1,4 @@
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import cm
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import LongTable, TableStyle, BaseDocTemplate,Frame, PageTemplate
@@ -29,8 +28,8 @@ def grant_root_permissions():
 
     print ('Running. Your euid is', euid)
 
-def call_table():
-    query = DataExtrator()
+def call_table(working_dir):
+    query = DataExtrator(working_dir)
     data_tmp = list(query.get_call_hisotry())
     data = [['Row ID', 'Contact Name', 'Number', 'Date', 'Type', 'Duration\n in seconds']]
 
@@ -61,8 +60,8 @@ def call_table():
 
     return call_table
 
-def sms_table():
-    query = DataExtrator()
+def sms_table(working_dir):
+    query = DataExtrator(working_dir)
     data_tmp = list(query.get_sms_list())
     data = [['Message ID', 'Thread ID', 'Receipent', 'Date', 'Body', 'Sent/revceived']]
 
@@ -93,8 +92,8 @@ def sms_table():
 
     return t
 
-def all_words_marking_table():
-    query = DataExtrator()
+def all_words_marking_table(working_dir):
+    query = DataExtrator(working_dir)
     analyzer = MessagesAnalyzer()
 
     analyzer.calculate_words(query.get_sms_list())
@@ -133,8 +132,8 @@ def all_words_marking_table():
 
     return tableWords
 
-def words_marking_by_chat():
-    query = DataExtrator()
+def words_marking_by_chat(working_dir):
+    query = DataExtrator(working_dir)
     analyzer = MessagesAnalyzer()
 
     analyzer.calculate_words(query.get_sms_list())
@@ -182,8 +181,8 @@ def words_marking_by_chat():
 
     return elements
 
-def sms_statistics_part():
-    query = DataExtrator()
+def sms_statistics_part(working_dir):
+    query = DataExtrator(working_dir)
     analyzer = MessagesAnalyzer()
 
     analyzer.analyze_sms_statistics(query.get_sms_statistics())
@@ -204,8 +203,8 @@ def sms_statistics_part():
 
     return elements
 
-def calllog_statistics():
-    query = DataExtrator()
+def calllog_statistics(working_dir):
+    query = DataExtrator(working_dir)
     analyzer = MessagesAnalyzer()
 
     analyzer.analyze_calls_statistics(query.get_calls_statistics())
@@ -227,7 +226,7 @@ def calllog_statistics():
 
     return elements
 
-def create_report_with_more_columns():
+def create_report_with_more_columns(working_dir):
     doc = BaseDocTemplate(
         "report2.pdf",
         pagesize=A4,
@@ -241,11 +240,11 @@ def create_report_with_more_columns():
 
     all_words_marking_title = Paragraph('Words marking through all chats', styles["Heading1"])
 
-    elements = words_marking_by_chat()
+    elements = words_marking_by_chat(working_dir)
     elements.append(PageBreak())
 
     elements.append(all_words_marking_title)
-    elements.append(all_words_marking_table())
+    elements.append(all_words_marking_table(working_dir))
 
     frameWidth = doc.width/2
     frameHeight = doc.height-.05*cm
@@ -259,7 +258,7 @@ def create_report_with_more_columns():
     doc.addPageTemplates([template])
     doc.build(elements)
 
-def create_report_for_statistics():
+def create_report_for_statistics(working_dir):
     doc = BaseDocTemplate(
         "report1.pdf",
         pagesize=A4,
@@ -273,15 +272,15 @@ def create_report_for_statistics():
 
     frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height - 2 * cm, id='normal')
 
-    elements = sms_statistics_part()
-    elements.extend(calllog_statistics())
+    elements = sms_statistics_part(working_dir)
+    elements.extend(calllog_statistics(working_dir))
 
     template = PageTemplate(id='statistics', frames=frame)
     doc.addPageTemplates([template])
     doc.build(elements)
 
 
-def create_report_with_full_log():
+def create_report_with_full_log(working_dir):
     doc = BaseDocTemplate(
         "report3.pdf",
         pagesize=A4,
@@ -301,12 +300,12 @@ def create_report_with_full_log():
     call_title = Paragraph('Call history log table.', styles["Heading1"])
 
     elements.append(sms_title)
-    elements.append(sms_table())
+    elements.append(sms_table(working_dir))
 
     elements.append(PageBreak())
 
     elements.append(call_title)
-    elements.append(call_table())
+    elements.append(call_table(working_dir))
     
     template = PageTemplate(id='longtable', frames=frame)
     doc.addPageTemplates([template])
@@ -331,9 +330,9 @@ def merger(output_path, input_paths):
 if __name__ == '__main__':
     grant_root_permissions()
 
-    create_report_for_statistics()
-    create_report_with_full_log()
-    create_report_with_more_columns()
+    create_report_for_statistics(sys.argv[1])
+    create_report_with_full_log(sys.argv[1])
+    create_report_with_more_columns(sys.argv[1])
 
     if os.path.exists(sys.argv[1] + '/report/report.pdf'):
         os.remove(sys.argv[1] + '/report/report.pdf')
