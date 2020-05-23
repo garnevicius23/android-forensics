@@ -1,1 +1,13 @@
-pip3 intall -r analyze/requirements.txt
+First step before everything, run prepare_env.sh script.
+With this script required python modules will be installed.
+
+After that go preparation_scripts directory and run start_case.sh if you will have your own disk image.
+
+If you dont have any disk image, there is folder 'case-91' where is example case.
+So you can directly run python file 'report.py' located in 'analyze' directory 
+with parameter which shows route to example case. E.x. 'python3 report.py [path_to_dir]/case-91'
+
+After script will be finished, file called 'report.pdf' where analyzed results will be displayed.
+
+If you had your own disk image and mounted it, after all analysis run 'unmount_image.sh' script 
+locaten in 'preparation_scripts' directory to unmount all partitions.
